@@ -22,6 +22,12 @@ public class SceneController : MonoBehaviour {
     void OnEnable()
     {
         StartCoroutine(CustomUpdate());
+        PlayerMovement.NewLevel += CreateRandomGap;
+    }
+
+    void OnDisable()
+    {
+        PlayerMovement.NewLevel -= CreateRandomGap;
     }
 
     public void CreateInitialGaps()

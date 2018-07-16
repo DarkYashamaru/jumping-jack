@@ -7,7 +7,6 @@ public class SceneCreator : MonoBehaviour {
     public GameObject Unit;
     public Transform Parent;
     public Vector2 StartingPoint = new Vector2(-5.3f, 3.85f);
-    public float LineDistance = 1;
     public float UnitDistance = 0.1f;
     const string LINE_FORMAT = "Line {0}";
     public SceneLines Scene;
@@ -35,11 +34,10 @@ public class SceneCreator : MonoBehaviour {
 
             for (int l = 0; l < Config.Units; l++)
             {
-                Scene.Lines[i].Units[l] = Instantiate(Unit, new Vector3(StartingPoint.x + (UnitDistance * l), StartingPoint.y - (LineDistance * i), 0), Quaternion.identity, line.transform);
+                Scene.Lines[i].Units[l] = Instantiate(Unit, new Vector3(StartingPoint.x + (UnitDistance * l), StartingPoint.y - (Config.LineDistance * i), 0), Quaternion.identity, line.transform);
             }
         }
     }
-
 }
 
 [System.Serializable]

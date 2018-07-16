@@ -13,5 +13,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.CoreModule:UnityEngine:ScriptableObject
   Units: 107
   Lines: 8
-  UnitByLines: 100
+  LineDistance: 0.97
   GapUnits: 10
+  MaxGaps: 8
