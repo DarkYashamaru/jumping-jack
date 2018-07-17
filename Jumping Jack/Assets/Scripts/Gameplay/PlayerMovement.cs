@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour {
     public static event System.Action NewLevel;
     public static event System.Action NextLevel;
     public static event System.Action LifeReduced;
+    public static event System.Action Score;
 
     //Inputs
     float moveDirection;
@@ -97,7 +98,9 @@ public class PlayerMovement : MonoBehaviour {
             {
                 SetJumpDelay();
                 CurrentLevel++;
-                if(CurrentLevel > LastLevel)
+                if (Score != null)
+                    Score();
+                if (CurrentLevel > LastLevel)
                 {
                     LastLevel = CurrentLevel;
                     if (NewLevel != null)
