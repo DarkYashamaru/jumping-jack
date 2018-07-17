@@ -10,7 +10,6 @@ public class GameConfig : ScriptableObject {
     public int GapUnits = 10;
     public int MaxGaps = 8;
     public float StunTime = 2;
-    public string FloorTag = "Floor";
     public float LeftLimit = -5.55f;
     public float RightLimit = 5.55f;
     public float MinLeftPos = -5.151f;

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour {
     [Header("Movement")]
@@ -22,10 +20,6 @@ public class PlayerMovement : MonoBehaviour {
     public static event System.Action NewLevel;
     public static event System.Action NextLevel;
     public static event System.Action LifeReduced;
-
-    //Debug
-    public Color[] RayColors;
-    int rayColorIndex;
 
     //Inputs
     float moveDirection;
@@ -71,7 +65,6 @@ public class PlayerMovement : MonoBehaviour {
                 SetTargetY();
                 grounded = false;
                 CurrentMovement = MovementState.JumpStart;
-                Debug.Log("Jump Start "+Time.time);
             }
 
             AutomaticMovementInWalls();
@@ -83,10 +76,10 @@ public class PlayerMovement : MonoBehaviour {
                 lastDirectionMoved = moveDirection;
             }
         }
+
         if(CurrentMovement == MovementState.JumpStart)
         {
             RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.up, Config.LineDistance, RaycastMask);
-            Debug.DrawRay(RayOrigin(), Vector3.up * Config.LineDistance, RayColors[Random.Range(0, RayColors.Length)], 5);
             if(hit.collider!= null)
             {
                 JumpAndCollide();
@@ -96,6 +89,7 @@ public class PlayerMovement : MonoBehaviour {
                 CurrentMovement = MovementState.Jumping;
             }
         }
+
         if(CurrentMovement == MovementState.Jumping)
         {
             MoveToTarget();
@@ -112,7 +106,6 @@ public class PlayerMovement : MonoBehaviour {
                     {
                         if (NextLevel != null)
                             NextLevel();
-                        Debug.Log("next level ");
                         enabled = false;
                         CurrentMovement = MovementState.None;
                     }
@@ -121,22 +114,24 @@ public class PlayerMovement : MonoBehaviour {
                 CurrentMovement = MovementState.Horizontal;
             }
         }
+
         if(CurrentMovement == MovementState.FallingStart)
         {
             SetFallY();
             CurrentMovement = MovementState.Falling;
         }
+
         if(CurrentMovement == MovementState.Falling)
         {
             MoveToTarget();
             if (transform.position == targetPos)
             {
-                //TODO crash with floor
                 CurrentLevel--;
                 SetTargetY();
                 Stun();
             }
         }
+
         if(CurrentMovement == MovementState.stun)
         {
             CheckFall();
@@ -145,6 +140,7 @@ public class PlayerMovement : MonoBehaviour {
                 CurrentMovement = MovementState.Horizontal;
             }
         }
+
         if(CurrentMovement == MovementState.JumpFailUp)
         {
             MoveToTarget();
@@ -154,6 +150,7 @@ public class PlayerMovement : MonoBehaviour {
                 CurrentMovement = MovementState.JumpFailDown;
             }
         }
+
         if(CurrentMovement == MovementState.JumpFailDown)
         {
             MoveToTarget();
@@ -178,7 +175,6 @@ public class PlayerMovement : MonoBehaviour {
         {
             if (LifeReduced != null)
                 LifeReduced();
-            Debug.Log("life reduced");
         }
     }
 
