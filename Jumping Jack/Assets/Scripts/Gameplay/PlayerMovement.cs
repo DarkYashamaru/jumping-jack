@@ -19,6 +19,7 @@ public class PlayerMovement : MonoBehaviour {
     float currentJumpDelay;
     float currentStunTime;
     public static event System.Action NewLevel;
+    public static event System.Action LifeReduced;
 
     //Debug
     public Color[] RayColors;
@@ -165,6 +166,12 @@ public class PlayerMovement : MonoBehaviour {
     {
         CurrentMovement = MovementState.stun;
         currentStunTime = Config.StunTime;
+        if(CurrentLevel == 0)
+        {
+            if (LifeReduced != null)
+                LifeReduced();
+            Debug.Log("life reduced");
+        }
     }
 
     void SetJumpDelay()
