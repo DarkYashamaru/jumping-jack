@@ -14,10 +14,14 @@ public class PlayerMovement : MonoBehaviour {
     float targetY;
     Vector3 targetPos;
     bool insideLimits;
-    float afterJumpDelay = 0.1f;
+    float afterJumpDelay = 0.2f;
     float currentJumpDelay;
     float currentStunTime;
     public static event System.Action NewLevel;
+
+    //Debug
+    public Color[] RayColors;
+    int rayColorIndex;
 
     //Inputs
     float moveDirection;
@@ -27,7 +31,6 @@ public class PlayerMovement : MonoBehaviour {
     private void Start()
     {
         initialY = transform.position.y;
-        SetTargetY();
         SetJumpDelay();
         CurrentMovement = MovementState.Horizontal;
     }
@@ -47,6 +50,7 @@ public class PlayerMovement : MonoBehaviour {
 
     void GetInputs()
     {
+        jump = false;
         moveDirection = Input.GetAxisRaw("Horizontal");
         jump = Input.GetAxisRaw("Vertical") > 0;
     }
@@ -57,9 +61,11 @@ public class PlayerMovement : MonoBehaviour {
         {
             CheckFall();
 
-            if (jump && currentJumpDelay <= 0)
+            if (CheckGround() && jump && currentJumpDelay <= 0)
             {
+                SetTargetY();
                 CurrentMovement = MovementState.JumpStart;
+                Debug.Log("Jump Start "+Time.time);
             }
 
             AutomaticMovementInWalls();
@@ -72,28 +78,30 @@ public class PlayerMovement : MonoBehaviour {
         }
         if(CurrentMovement == MovementState.JumpStart)
         {
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.up, Config.LineDistance);
+            RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.up, Config.LineDistance);
+            Debug.DrawRay(RayOrigin(), Vector3.up * Config.LineDistance, RayColors[Random.Range(0, RayColors.Length)], 5);
             if(hit.collider!=null)
             {
-                CurrentMovement = MovementState.Horizontal; 
-                //TODO jump and collide
+                JumpAndCollide();
             }
             else
             {
                 CurrentMovement = MovementState.Jumping;
             }
+            //Debug.Break();
         }
         if(CurrentMovement == MovementState.Jumping)
         {
             MoveToTarget();
             if (transform.position == targetPos)
             {
-                CurrentMovement = MovementState.Horizontal;
                 SetJumpDelay();
                 CurrentLevel++;
                 if (NewLevel != null)
                     NewLevel();
                 SetTargetY();
+                CurrentMovement = MovementState.Horizontal;
+                Debug.Log("Jump end");
             }
         }
         if(CurrentMovement == MovementState.FallingStart)
@@ -120,6 +128,29 @@ public class PlayerMovement : MonoBehaviour {
                 CurrentMovement = MovementState.Horizontal;
             }
         }
+        if(CurrentMovement == MovementState.JumpFailUp)
+        {
+            MoveToTarget();
+            if (transform.position == targetPos)
+            {
+                SetJumpFailYDown();
+                CurrentMovement = MovementState.JumpFailDown;
+            }
+        }
+        if(CurrentMovement == MovementState.JumpFailDown)
+        {
+            MoveToTarget();
+            if (transform.position == targetPos)
+            {
+                Stun();
+            }
+        }
+    }
+
+    void JumpAndCollide ()
+    {
+        SetJumpFailYUp();
+        CurrentMovement = MovementState.JumpFailUp;
     }
 
     void Stun()
@@ -150,7 +181,7 @@ public class PlayerMovement : MonoBehaviour {
 
     bool CheckGround ()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.down, Config.LineDistance);
+        RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.down, Config.LineDistance);
         if (hit.collider != null || !insideLimits)
         {
             return true;
@@ -199,5 +230,21 @@ public class PlayerMovement : MonoBehaviour {
         targetY = initialY + ((CurrentLevel - 1) * Config.LineDistance);
     }
 
-    public enum MovementState {None, Horizontal, JumpStart, Jumping, FallingStart, Falling, stun};
+    void SetJumpFailYUp ()
+    {
+        SetTargetY();
+        targetY -= (Config.LineDistance - Config.JumpFailDistance);
+    }
+
+    void SetJumpFailYDown ()
+    {
+        targetY = initialY + (CurrentLevel * Config.LineDistance);
+    }
+
+    Vector3 RayOrigin ()
+    {
+        return new Vector3(transform.position.x, initialY + (CurrentLevel * Config.LineDistance), 0);
+    }
+
+    public enum MovementState {None, Horizontal, JumpStart, Jumping, JumpFailUp, JumpFailDown, FallingStart, Falling, stun};
 }
