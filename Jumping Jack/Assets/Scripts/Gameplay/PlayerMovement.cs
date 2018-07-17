@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour {
     int LastLevel;
     [Header("Setup")]
     public GameConfig Config;
+    public LayerMask RaycastMask;
     float initialY;
     float targetY;
     Vector3 targetPos;
@@ -19,6 +20,7 @@ public class PlayerMovement : MonoBehaviour {
     float currentJumpDelay;
     float currentStunTime;
     public static event System.Action NewLevel;
+    public static event System.Action NextLevel;
     public static event System.Action LifeReduced;
 
     //Debug
@@ -83,9 +85,9 @@ public class PlayerMovement : MonoBehaviour {
         }
         if(CurrentMovement == MovementState.JumpStart)
         {
-            RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.up, Config.LineDistance);
+            RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.up, Config.LineDistance, RaycastMask);
             Debug.DrawRay(RayOrigin(), Vector3.up * Config.LineDistance, RayColors[Random.Range(0, RayColors.Length)], 5);
-            if(hit.collider!=null)
+            if(hit.collider!= null)
             {
                 JumpAndCollide();
             }
@@ -93,7 +95,6 @@ public class PlayerMovement : MonoBehaviour {
             {
                 CurrentMovement = MovementState.Jumping;
             }
-            //Debug.Break();
         }
         if(CurrentMovement == MovementState.Jumping)
         {
@@ -107,10 +108,17 @@ public class PlayerMovement : MonoBehaviour {
                     LastLevel = CurrentLevel;
                     if (NewLevel != null)
                         NewLevel();
+                    if(CurrentLevel >= 8)
+                    {
+                        if (NextLevel != null)
+                            NextLevel();
+                        Debug.Log("next level ");
+                        enabled = false;
+                        CurrentMovement = MovementState.None;
+                    }
                 }
                 SetTargetY();
                 CurrentMovement = MovementState.Horizontal;
-                Debug.Log("Jump end");
             }
         }
         if(CurrentMovement == MovementState.FallingStart)
@@ -162,7 +170,7 @@ public class PlayerMovement : MonoBehaviour {
         CurrentMovement = MovementState.JumpFailUp;
     }
 
-    void Stun()
+    public void Stun()
     {
         CurrentMovement = MovementState.stun;
         currentStunTime = Config.StunTime;
@@ -196,7 +204,7 @@ public class PlayerMovement : MonoBehaviour {
 
     bool CheckGround ()
     {
-        RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.down, Config.LineDistance);
+        RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.down, Config.LineDistance, RaycastMask);
         if (hit.collider != null || !insideLimits)
         {
             return true;
