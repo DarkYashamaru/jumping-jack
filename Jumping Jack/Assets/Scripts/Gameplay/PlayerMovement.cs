@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour {
     public float VerticalSpeed = 4;
     public MovementState CurrentMovement;
     public int CurrentLevel;
+    int LastLevel;
     [Header("Setup")]
     public GameConfig Config;
     float initialY;
@@ -27,6 +28,7 @@ public class PlayerMovement : MonoBehaviour {
     float moveDirection;
     float lastDirectionMoved;
     bool jump;
+    bool grounded;
 
     private void Start()
     {
@@ -60,16 +62,18 @@ public class PlayerMovement : MonoBehaviour {
         if(CurrentMovement == MovementState.Horizontal)
         {
             CheckFall();
-
-            if (CheckGround() && jump && currentJumpDelay <= 0)
+            grounded = CheckGround();
+            if (grounded && jump && currentJumpDelay <= 0)
             {
                 SetTargetY();
+                grounded = false;
                 CurrentMovement = MovementState.JumpStart;
                 Debug.Log("Jump Start "+Time.time);
             }
 
             AutomaticMovementInWalls();
-            transform.Translate(moveDirection * MoveSpeed * Time.deltaTime, 0, 0, Space.World);
+            if(grounded)
+                transform.Translate(moveDirection * MoveSpeed * Time.deltaTime, 0, 0, Space.World);
             Limits();
             if (Mathf.Abs(moveDirection) > 0)
             {
@@ -97,8 +101,12 @@ public class PlayerMovement : MonoBehaviour {
             {
                 SetJumpDelay();
                 CurrentLevel++;
-                if (NewLevel != null)
-                    NewLevel();
+                if(CurrentLevel > LastLevel)
+                {
+                    LastLevel = CurrentLevel;
+                    if (NewLevel != null)
+                        NewLevel();
+                }
                 SetTargetY();
                 CurrentMovement = MovementState.Horizontal;
                 Debug.Log("Jump end");
