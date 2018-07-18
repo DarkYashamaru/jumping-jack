@@ -10,6 +10,7 @@ public class GameOverUI : MonoBehaviour {
     CanvasGroup Group;
     public static event System.Action RestartPressed;
     bool restartPressed;
+    bool alreadyShowing;
 
     private void Awake()
     {
@@ -23,10 +24,14 @@ public class GameOverUI : MonoBehaviour {
 
     private void Show()
     {
-        FinalScore.text = ScoreManager.GetScore().ToString();
-        Hazards.text = string.Format(Hazards.text, LevelManager.GetInstance().Currentlevel);
-        LeanTween.value(gameObject, UpdateCanvas, 0, 1, 1);
-        Group.interactable = true;
+        if(!alreadyShowing)
+        {
+            alreadyShowing = true;
+            FinalScore.text = ScoreManager.GetScore().ToString();
+            Hazards.text = string.Format(Hazards.text, LevelManager.GetInstance().Currentlevel);
+            LeanTween.value(gameObject, UpdateCanvas, 0, 1, 1);
+            Group.interactable = true;
+        }
     }
 
     void UpdateCanvas (float newValue)
