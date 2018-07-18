@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class LifeUI : MonoBehaviour {
-    public Text Life;
+    public GameObject[] Lives;
 
     private void OnEnable()
     {
@@ -18,9 +18,19 @@ public class LifeUI : MonoBehaviour {
 
     private void UpdateLife(int lives)
     {
-        Life.text = lives.ToString();
+        DisableAll();
+        for (int i = 0; i < lives; i++)
+        {
+            Lives[i].SetActive(true);
+        }
     }
 
-
+    void DisableAll ()
+    {
+        for (int i = 0; i < Lives.Length; i++)
+        {
+            Lives[i].SetActive(false);
+        }
+    }
 
 }
