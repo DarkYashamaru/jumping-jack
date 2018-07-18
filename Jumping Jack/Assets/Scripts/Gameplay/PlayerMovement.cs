@@ -17,10 +17,15 @@ public class PlayerMovement : MonoBehaviour {
     float afterJumpDelay = 0.2f;
     float currentJumpDelay;
     float currentStunTime;
+    //Gameplay events
     public static event System.Action NewLevel;
     public static event System.Action NextLevel;
     public static event System.Action LifeReduced;
     public static event System.Action Score;
+    //Animation events
+    public static event System.Action<bool> StunState;
+    public static event System.Action<bool> Jump;
+    public static event System.Action<bool> Falling;
 
     //Inputs
     float moveDirection;
@@ -66,6 +71,8 @@ public class PlayerMovement : MonoBehaviour {
                 SetTargetY();
                 grounded = false;
                 CurrentMovement = MovementState.JumpStart;
+                if (Jump != null)
+                    Jump(true);
             }
 
             AutomaticMovementInWalls();
@@ -98,6 +105,8 @@ public class PlayerMovement : MonoBehaviour {
             {
                 SetJumpDelay();
                 CurrentLevel++;
+                if (Jump != null)
+                    Jump(false);
                 if (Score != null)
                     Score();
                 if (CurrentLevel > LastLevel)
@@ -131,6 +140,8 @@ public class PlayerMovement : MonoBehaviour {
             {
                 CurrentLevel--;
                 SetTargetY();
+                if (Falling != null)
+                    Falling(false);
                 Stun();
             }
         }
@@ -141,6 +152,8 @@ public class PlayerMovement : MonoBehaviour {
             if(currentStunTime <= 0)
             {
                 CurrentMovement = MovementState.Horizontal;
+                if (StunState != null)
+                    StunState(false);
             }
         }
 
@@ -172,6 +185,8 @@ public class PlayerMovement : MonoBehaviour {
 
     public void Stun()
     {
+        if (StunState != null)
+            StunState(true);
         CurrentMovement = MovementState.stun;
         currentStunTime = Config.StunTime;
         if(CurrentLevel == 0)
@@ -191,6 +206,8 @@ public class PlayerMovement : MonoBehaviour {
         if (!CheckGround() && currentJumpDelay <= 0)
         {
             CurrentMovement = MovementState.FallingStart;
+            if (Falling != null)
+                Falling(true);
         }
     }
 
