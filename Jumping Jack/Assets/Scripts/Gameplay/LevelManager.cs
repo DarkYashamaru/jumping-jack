@@ -60,6 +60,7 @@ public class LevelManager : MonoBehaviour {
         Debug.Log("Starting level " + Currentlevel);
     }
 
+    [ContextMenu("Level Clear!")]
     public void NextLevel()
     {
         Currentlevel++;

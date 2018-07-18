@@ -7,6 +7,11 @@ using UnityEngine.UI;
 public class LevelClearUI : MonoBehaviour {
     public Text Hazards;
     CanvasGroup Group;
+    public GameData Data;
+    public Text Message;
+    int messageIndex;
+    public float DelayBeforeText = 2;
+    public float MessageDelayTime = 0.1f;
 
     private void Awake()
     {
@@ -25,13 +30,34 @@ public class LevelClearUI : MonoBehaviour {
 
     private void Show(int hazards)
     {
+        messageIndex = hazards - 1;
         Hazards.text = string.Format(Hazards.text, hazards);
         LeanTween.value(gameObject, UpdateCanvas, 0, 1, 1);
         Group.interactable = true;
+        DisplayMessage();
     }
 
     void UpdateCanvas(float newValue)
     {
         Group.alpha = newValue;
+    }
+
+    void DisplayMessage ()
+    {
+        StartCoroutine(AnimateMessage());
+    }
+
+    IEnumerator AnimateMessage ()
+    {
+        Message.text = string.Empty;
+        yield return new WaitForSeconds(DelayBeforeText);
+        string message = Data.Messages[messageIndex];
+        message = message.Replace("[s]", "\n");
+
+        for (int i = 0; i < message.Length; i++)
+        {
+            Message.text += message[i];
+            yield return new WaitForSeconds(MessageDelayTime);
+        }
     }
 }

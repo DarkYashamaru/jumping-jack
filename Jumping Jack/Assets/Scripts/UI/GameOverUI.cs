@@ -6,6 +6,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CanvasGroup))]
 public class GameOverUI : MonoBehaviour {
     public Text FinalScore;
+    public Text Hazards;
     CanvasGroup Group;
     public static event System.Action RestartPressed;
     bool restartPressed;
@@ -23,6 +24,7 @@ public class GameOverUI : MonoBehaviour {
     private void Show()
     {
         FinalScore.text = ScoreManager.GetScore().ToString();
+        Hazards.text = string.Format(Hazards.text, LevelManager.GetInstance().Currentlevel);
         LeanTween.value(gameObject, UpdateCanvas, 0, 1, 1);
         Group.interactable = true;
     }

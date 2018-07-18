@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameData : ScriptableObject {
     public Data[] LevelInfo;
-
+    public string[] Messages;
 }
 
 [System.Serializable]
