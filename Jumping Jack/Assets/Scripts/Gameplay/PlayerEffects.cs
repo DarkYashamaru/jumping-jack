@@ -15,6 +15,7 @@ public class PlayerEffects : MonoBehaviour {
     private void OnDisable()
     {
         PlayerMovement.JumpFail -= CrashEffect;
+        PlayerMovement.StunState -= StunEffect;
     }
 
     void CrashEffect ()
