@@ -55,7 +55,7 @@ public class HazardMovement : MonoBehaviour {
     {
         if(collision.CompareTag(Config.PlayerTag))
         {
-            collision.GetComponent<PlayerMovement>().Stun();
+            collision.GetComponent<PlayerMovement>().HazardDamage();
         }
     }
 

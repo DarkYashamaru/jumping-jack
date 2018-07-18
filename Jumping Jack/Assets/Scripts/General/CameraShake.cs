@@ -28,11 +28,13 @@ public class CameraShake : MonoBehaviour
     {
         originalPos = camTransform.localPosition;
         PlayerMovement.JumpFail += ShakeCamera;
+        PlayerMovement.Damage += ShakeCamera;
     }
 
     private void OnDisable()
     {
         PlayerMovement.JumpFail -= ShakeCamera;
+        PlayerMovement.Damage -= ShakeCamera;
     }
 
     void ShakeCamera ()

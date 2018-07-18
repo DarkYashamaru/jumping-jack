@@ -29,6 +29,7 @@ public class PlayerMovement : MonoBehaviour {
     public static event System.Action<bool> Falling;
     public static event System.Action<float> Movement;
     public static event System.Action JumpFail;
+    public static event System.Action Damage;
 
     //Inputs
     float moveDirection;
@@ -148,7 +149,7 @@ public class PlayerMovement : MonoBehaviour {
                 SetTargetY();
                 if (Falling != null)
                     Falling(false);
-                Stun();
+                Stun(1);
             }
         }
 
@@ -192,7 +193,7 @@ public class PlayerMovement : MonoBehaviour {
             {
                 if (Falling != null)
                     Falling(false);
-                Stun();
+                Stun(3);
             }
         }
     }
@@ -211,17 +212,24 @@ public class PlayerMovement : MonoBehaviour {
         CurrentMovement = MovementState.JumpFailUp;
     }
 
-    public void Stun()
+    public void Stun(float multiplier)
     {
         if (StunState != null)
             StunState(true);
         CurrentMovement = MovementState.stun;
-        currentStunTime = Config.StunTime;
+        currentStunTime = Config.StunTime * multiplier;
         if(CurrentLevel == 0)
         {
             if (LifeReduced != null)
                 LifeReduced();
         }
+    }
+
+    public void HazardDamage ()
+    {
+        if (Damage != null)
+            Damage();
+        Stun(2);
     }
 
     void SetJumpDelay()
