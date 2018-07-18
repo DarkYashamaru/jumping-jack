@@ -12,6 +12,7 @@ public class GameConfig : ScriptableObject {
     public int GapUnits = 10;
     public int MaxGaps = 8;
     public float StunTime = 1;
+    public float CrashTime = 0.3f;
     public float HazardInitialYPos = 4.2f;
     public float LeftLimit = -5.55f;
     public float RightLimit = 5.55f;

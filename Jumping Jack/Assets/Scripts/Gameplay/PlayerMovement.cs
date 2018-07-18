@@ -17,6 +17,7 @@ public class PlayerMovement : MonoBehaviour {
     float afterJumpDelay = 0.2f;
     float currentJumpDelay;
     float currentStunTime;
+    float currentCrashTime;
     //Gameplay events
     public static event System.Action NewLevel;
     public static event System.Action NextLevel;
@@ -26,6 +27,8 @@ public class PlayerMovement : MonoBehaviour {
     public static event System.Action<bool> StunState;
     public static event System.Action<bool> Jump;
     public static event System.Action<bool> Falling;
+    public static event System.Action<float> Movement;
+    public static event System.Action JumpFail;
 
     //Inputs
     float moveDirection;
@@ -51,6 +54,7 @@ public class PlayerMovement : MonoBehaviour {
     {
         currentJumpDelay -= Time.deltaTime;
         currentStunTime -= Time.deltaTime;
+        currentCrashTime -= Time.deltaTime;
     }
 
     void GetInputs()
@@ -83,6 +87,8 @@ public class PlayerMovement : MonoBehaviour {
             {
                 lastDirectionMoved = moveDirection;
             }
+            if (Movement != null)
+                Movement(moveDirection);
         }
 
         if(CurrentMovement == MovementState.JumpStart)
@@ -162,7 +168,19 @@ public class PlayerMovement : MonoBehaviour {
             MoveToTarget();
             if (transform.position == targetPos)
             {
+                Crash();
+            }
+        }
+
+        if(CurrentMovement == MovementState.Crash)
+        {
+            if(currentCrashTime < 0)
+            {
                 SetJumpFailYDown();
+                if (Jump != null)
+                    Jump(false);
+                if (Falling != null)
+                    Falling(true);
                 CurrentMovement = MovementState.JumpFailDown;
             }
         }
@@ -172,9 +190,19 @@ public class PlayerMovement : MonoBehaviour {
             MoveToTarget();
             if (transform.position == targetPos)
             {
+                if (Falling != null)
+                    Falling(false);
                 Stun();
             }
         }
+    }
+
+    void Crash ()
+    {
+        if (JumpFail != null)
+            JumpFail();
+        currentCrashTime = Config.CrashTime;
+        CurrentMovement = MovementState.Crash;
     }
 
     void JumpAndCollide ()
@@ -285,5 +313,5 @@ public class PlayerMovement : MonoBehaviour {
         return new Vector3(transform.position.x, initialY + (CurrentLevel * Config.LineDistance), 0);
     }
 
-    public enum MovementState {None, Horizontal, JumpStart, Jumping, JumpFailUp, JumpFailDown, FallingStart, Falling, stun};
+    public enum MovementState {None, Horizontal, JumpStart, Jumping, JumpFailUp, JumpFailDown, FallingStart, Falling, stun, Crash};
 }
