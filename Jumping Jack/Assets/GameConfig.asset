@@ -14,5 +14,13 @@ MonoBehaviour:
   Units: 107
   Lines: 8
   LineDistance: 0.97
+  JumpFailDistance: 0.272
+  InitialLives: 5
+  BaseScoreValue: 5
   GapUnits: 10
   MaxGaps: 8
+  StunTime: 2
+  LeftLimit: -5.55
+  RightLimit: 5.55
+  MinLeftPos: -5.151
+  MinRightPos: 5.151

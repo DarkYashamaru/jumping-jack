@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ScoreManager : MonoBehaviour {
     public GameConfig Config;
@@ -25,6 +23,16 @@ public class ScoreManager : MonoBehaviour {
         }
     }
 
+    public static int GetScore ()
+    {
+        return Instance.CurrentScore;
+    }
+
+    public static int GetHighScore ()
+    {
+        return Instance.HighScore;
+    }
+
     private void Start()
     {
         LoadHighScore();
@@ -33,13 +41,16 @@ public class ScoreManager : MonoBehaviour {
     private void OnEnable()
     {
         LevelManager.LevelStart += LevelStart;
+        LevelManager.RestartAll += RestartScore;
         PlayerMovement.Score += IncreaseScore;
+        LifeManager.GameOver += SaveHighScore;
     }
 
     private void OnDisable()
     {
         LevelManager.LevelStart -= LevelStart;
         PlayerMovement.Score -= IncreaseScore;
+        LifeManager.GameOver -= SaveHighScore;
     }
 
     private void LevelStart(int currentLevel)
@@ -60,6 +71,15 @@ public class ScoreManager : MonoBehaviour {
         RefreshScores();
     }
 
+    private void SaveHighScore()
+    {
+        Debug.Log("Saving high score ");
+        if(CurrentScore > HighScore)
+        {
+            PlayerPrefs.SetInt(HIGH_SCORE_KEY, CurrentScore);
+        }
+    }
+
     void RefreshScores ()
     {
         if (ScoreUpdated != null)
@@ -69,5 +89,9 @@ public class ScoreManager : MonoBehaviour {
             HighScoreUpdated(HighScore);
     }
 
-
+    void RestartScore ()
+    {
+        CurrentScore = 0;
+        LoadHighScore();
+    }
 }

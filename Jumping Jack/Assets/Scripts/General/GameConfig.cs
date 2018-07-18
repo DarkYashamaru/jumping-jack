@@ -7,6 +7,7 @@ public class GameConfig : ScriptableObject {
     public int Lines = 8;
     public float LineDistance = 0.97f;
     public float JumpFailDistance = 0.272f;
+    public int InitialLives = 5;
     public int BaseScoreValue = 5;
     public int GapUnits = 10;
     public int MaxGaps = 8;

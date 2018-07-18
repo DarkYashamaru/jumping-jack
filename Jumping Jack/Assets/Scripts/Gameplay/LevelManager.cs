@@ -7,6 +7,7 @@ public class LevelManager : MonoBehaviour {
     public int Currentlevel;
     static LevelManager Instance;
     public static event System.Action<int> LevelStart;
+    public static event System.Action RestartAll;
 
     private void Awake()
     {
@@ -23,7 +24,7 @@ public class LevelManager : MonoBehaviour {
 
     private void Start()
     {
-        Currentlevel = StartLevel;
+        SetInitialLevel();
         LevelStartEvent();
     }
 
@@ -36,6 +37,7 @@ public class LevelManager : MonoBehaviour {
     {
         PlayerMovement.NextLevel += NextLevel;
         FadeSceneChanger.LevelFinishedLoading += NewLevelLoaded;
+        GameOverUI.RestartPressed += RestartGame;
     }
 
     private void OnDisable()
@@ -58,13 +60,26 @@ public class LevelManager : MonoBehaviour {
 
     public void NextLevel()
     {
-        StartCoroutine(LoadNextLevel());
+        Instance.Currentlevel++;
+        StartCoroutine(RestartLevel());
     }
 
-    IEnumerator LoadNextLevel ()
+    IEnumerator RestartLevel ()
     {
-        Instance.Currentlevel++;
         yield return new WaitForSeconds(1);
         FadeSceneChanger.ChangeScene(0);
+    }
+
+    private void RestartGame()
+    {
+        if (RestartAll != null)
+            RestartAll();
+        SetInitialLevel();
+        StartCoroutine(RestartLevel());
+    }
+
+    void SetInitialLevel ()
+    {
+        Currentlevel = StartLevel;
     }
 }
