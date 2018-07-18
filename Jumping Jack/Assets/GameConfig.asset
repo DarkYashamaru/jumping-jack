@@ -19,7 +19,8 @@ MonoBehaviour:
   BaseScoreValue: 5
   GapUnits: 10
   MaxGaps: 8
-  StunTime: 2
+  StunTime: 1
+  HazardInitialYPos: 4.2
   LeftLimit: -5.55
   RightLimit: 5.55
   MinLeftPos: -5.151

@@ -7,6 +7,8 @@ public class LevelManager : MonoBehaviour {
     public int Currentlevel;
     static LevelManager Instance;
     public static event System.Action<int> LevelStart;
+    public static event System.Action<int> NextLevelHazards;
+    public static event System.Action GameClear;
     public static event System.Action RestartAll;
 
     private void Awake()
@@ -60,13 +62,23 @@ public class LevelManager : MonoBehaviour {
 
     public void NextLevel()
     {
-        Instance.Currentlevel++;
-        StartCoroutine(RestartLevel());
+        Currentlevel++;
+        if(Currentlevel >= 21)
+        {
+            if (GameClear != null)
+                GameClear();
+        }
+        else
+        {
+            if (NextLevelHazards != null)
+                NextLevelHazards(Currentlevel);
+            StartCoroutine(RestartLevel(10));
+        }
     }
 
-    IEnumerator RestartLevel ()
+    IEnumerator RestartLevel (float time)
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(time);
         FadeSceneChanger.ChangeScene(0);
     }
 
@@ -75,7 +87,7 @@ public class LevelManager : MonoBehaviour {
         if (RestartAll != null)
             RestartAll();
         SetInitialLevel();
-        StartCoroutine(RestartLevel());
+        StartCoroutine(RestartLevel(1));
     }
 
     void SetInitialLevel ()
