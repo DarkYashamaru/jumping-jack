@@ -7,11 +7,9 @@ public class LevelGap
 {
     public Direction CurrentDirection;
     public Gap Gap;
-    GameConfig Config;
 
     public LevelGap(Direction dir, Vector2 initPos, GameConfig config)
     {
-        Config = config;
         CurrentDirection = dir;
         Gap = new Gap(config, initPos);
     }

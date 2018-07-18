@@ -23,11 +23,18 @@ public class SceneController : MonoBehaviour {
     {
         StartCoroutine(CustomUpdate());
         PlayerMovement.NewLevel += CreateRandomGap;
+        PlayerMovement.NextLevel += LevelFinished;
+    }
+
+    private void LevelFinished()
+    {
+        enabled = false;
     }
 
     void OnDisable()
     {
         PlayerMovement.NewLevel -= CreateRandomGap;
+        PlayerMovement.NextLevel -= LevelFinished;
     }
 
     public void CreateInitialGaps()

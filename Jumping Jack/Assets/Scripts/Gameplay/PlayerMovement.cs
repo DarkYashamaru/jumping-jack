@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour {
     [Header("Movement")]
@@ -8,31 +6,31 @@ public class PlayerMovement : MonoBehaviour {
     public float VerticalSpeed = 4;
     public MovementState CurrentMovement;
     public int CurrentLevel;
+    int LastLevel;
     [Header("Setup")]
     public GameConfig Config;
+    public LayerMask RaycastMask;
     float initialY;
     float targetY;
     Vector3 targetPos;
     bool insideLimits;
-    float afterJumpDelay = 0.1f;
+    float afterJumpDelay = 0.2f;
     float currentJumpDelay;
     float currentStunTime;
-
-    //Events
     public static event System.Action NewLevel;
-    public static event System.Action<bool> StunState;
-    public static event System.Action<bool> Jump;
-    public static event System.Action<bool> Falling;
+    public static event System.Action NextLevel;
+    public static event System.Action LifeReduced;
+    public static event System.Action Score;
 
     //Inputs
     float moveDirection;
     float lastDirectionMoved;
     bool jump;
+    bool grounded;
 
     private void Start()
     {
         initialY = transform.position.y;
-        SetTargetY();
         SetJumpDelay();
         CurrentMovement = MovementState.Horizontal;
     }
@@ -52,6 +50,7 @@ public class PlayerMovement : MonoBehaviour {
 
     void GetInputs()
     {
+        jump = false;
         moveDirection = Input.GetAxisRaw("Horizontal");
         jump = Input.GetAxisRaw("Vertical") > 0;
     }
@@ -61,16 +60,17 @@ public class PlayerMovement : MonoBehaviour {
         if(CurrentMovement == MovementState.Horizontal)
         {
             CheckFall();
-
-            if (jump && currentJumpDelay <= 0)
+            grounded = CheckGround();
+            if (grounded && jump && currentJumpDelay <= 0)
             {
+                SetTargetY();
+                grounded = false;
                 CurrentMovement = MovementState.JumpStart;
-                if (Jump != null)
-                    Jump(true);
             }
 
             AutomaticMovementInWalls();
-            transform.Translate(moveDirection * MoveSpeed * Time.deltaTime, 0, 0, Space.World);
+            if(grounded)
+                transform.Translate(moveDirection * MoveSpeed * Time.deltaTime, 0, 0, Space.World);
             Limits();
             if (Mathf.Abs(moveDirection) > 0)
             {
@@ -80,10 +80,10 @@ public class PlayerMovement : MonoBehaviour {
 
         if(CurrentMovement == MovementState.JumpStart)
         {
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.up, Config.LineDistance);
-            if(hit.collider!=null)
+            RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.up, Config.LineDistance, RaycastMask);
+            if(hit.collider!= null)
             {
-                CurrentMovement = MovementState.Horizontal;
+                JumpAndCollide();
             }
             else
             {
@@ -96,15 +96,32 @@ public class PlayerMovement : MonoBehaviour {
             MoveToTarget();
             if (transform.position == targetPos)
             {
-                CurrentMovement = MovementState.Horizontal;
                 SetJumpDelay();
                 CurrentLevel++;
-                if (NewLevel != null)
-                    NewLevel();
+                if (Score != null)
+                    Score();
+                if (CurrentLevel > LastLevel)
+                {
+                    LastLevel = CurrentLevel;
+                    if (NewLevel != null)
+                        NewLevel();
+                    if(CurrentLevel >= 8)
+                    {
+                        if (NextLevel != null)
+                            NextLevel();
+                        enabled = false;
+                        CurrentMovement = MovementState.None;
+                    }
+                }
                 SetTargetY();
-                if (Jump != null)
-                    Jump(false);
+                CurrentMovement = MovementState.Horizontal;
             }
+        }
+
+        if(CurrentMovement == MovementState.FallingStart)
+        {
+            SetFallY();
+            CurrentMovement = MovementState.Falling;
         }
 
         if(CurrentMovement == MovementState.Falling)
@@ -114,8 +131,6 @@ public class PlayerMovement : MonoBehaviour {
             {
                 CurrentLevel--;
                 SetTargetY();
-                if (Falling != null)
-                    Falling(false);
                 Stun();
             }
         }
@@ -126,18 +141,44 @@ public class PlayerMovement : MonoBehaviour {
             if(currentStunTime <= 0)
             {
                 CurrentMovement = MovementState.Horizontal;
-                if (StunState != null)
-                    StunState(false);
+            }
+        }
+
+        if(CurrentMovement == MovementState.JumpFailUp)
+        {
+            MoveToTarget();
+            if (transform.position == targetPos)
+            {
+                SetJumpFailYDown();
+                CurrentMovement = MovementState.JumpFailDown;
+            }
+        }
+
+        if(CurrentMovement == MovementState.JumpFailDown)
+        {
+            MoveToTarget();
+            if (transform.position == targetPos)
+            {
+                Stun();
             }
         }
     }
 
-    void Stun()
+    void JumpAndCollide ()
     {
-        if (StunState != null)
-            StunState(true);
+        SetJumpFailYUp();
+        CurrentMovement = MovementState.JumpFailUp;
+    }
+
+    public void Stun()
+    {
         CurrentMovement = MovementState.stun;
         currentStunTime = Config.StunTime;
+        if(CurrentLevel == 0)
+        {
+            if (LifeReduced != null)
+                LifeReduced();
+        }
     }
 
     void SetJumpDelay()
@@ -149,10 +190,7 @@ public class PlayerMovement : MonoBehaviour {
     {
         if (!CheckGround() && currentJumpDelay <= 0)
         {
-            SetFallY();
-            CurrentMovement = MovementState.Falling;
-            if (Falling != null)
-                Falling(true);
+            CurrentMovement = MovementState.FallingStart;
         }
     }
 
@@ -165,7 +203,7 @@ public class PlayerMovement : MonoBehaviour {
 
     bool CheckGround ()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.down, Config.LineDistance);
+        RaycastHit2D hit = Physics2D.Raycast(RayOrigin(), Vector3.down, Config.LineDistance, RaycastMask);
         if (hit.collider != null || !insideLimits)
         {
             return true;
@@ -214,5 +252,21 @@ public class PlayerMovement : MonoBehaviour {
         targetY = initialY + ((CurrentLevel - 1) * Config.LineDistance);
     }
 
-    public enum MovementState {None, Horizontal, JumpStart, Jumping, JumpFail, Falling, stun};
+    void SetJumpFailYUp ()
+    {
+        SetTargetY();
+        targetY -= (Config.LineDistance - Config.JumpFailDistance);
+    }
+
+    void SetJumpFailYDown ()
+    {
+        targetY = initialY + (CurrentLevel * Config.LineDistance);
+    }
+
+    Vector3 RayOrigin ()
+    {
+        return new Vector3(transform.position.x, initialY + (CurrentLevel * Config.LineDistance), 0);
+    }
+
+    public enum MovementState {None, Horizontal, JumpStart, Jumping, JumpFailUp, JumpFailDown, FallingStart, Falling, stun};
 }
